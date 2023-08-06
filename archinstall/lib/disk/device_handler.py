@@ -172,7 +172,7 @@ class DeviceHandler(object):
 
 		match fs_type:
 			case FilesystemType.Btrfs:
-				options += ['-f']
+				options += ['-f', '--csum xxhash']
 				command += 'mkfs.btrfs'
 			case FilesystemType.Fat16:
 				options += ['-F16']
