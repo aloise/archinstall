@@ -368,11 +368,14 @@ def suggest_multi_disk_layout(
 	boot_partition = _boot_partition()
 	root_device_modification.add_partition(boot_partition)
 
+	start_mib = boot_partition.start.value+boot_partition.length.value
+	start_unit = boot_partition.start.unit
+
 	# add root partition to the root device
 	root_partition = disk.PartitionModification(
 		status=disk.ModificationStatus.Create,
 		type=disk.PartitionType.Primary,
-		start=disk.Size(513, disk.Unit.MiB) if SysInfo.has_uefi() else disk.Size(206, disk.Unit.MiB),
+		start=disk.Size(start_mib, start_unit) if SysInfo.has_uefi() else disk.Size(start_mib, start_unit),
 		length=disk.Size(100, disk.Unit.Percent, total_size=root_device.device_info.total_size),
 		mountpoint=Path('/'),
 		mount_options=['compress=zstd'] if compression else [],
