@@ -172,8 +172,8 @@ def select_disk_config(
 
 def _boot_partition() -> disk.PartitionModification:
 	if SysInfo.has_uefi():
-		start = disk.Size(1, disk.Unit.MiB)
-		size = disk.Size(512, disk.Unit.MiB)
+		start = disk.Size(16, disk.Unit.MiB)
+		size = disk.Size(1024, disk.Unit.MiB)
 	else:
 		start = disk.Size(3, disk.Unit.MiB)
 		size = disk.Size(203, disk.Unit.MiB)
@@ -228,7 +228,7 @@ def suggest_single_disk_layout(
 		using_subvolumes = choice.value == Menu.yes()
 
 		prompt = str(_('Would you like to use BTRFS compression?'))
-		choice = Menu(prompt, Menu.yes_no(), skip=False, default_option=Menu.yes()).run()
+		choice = Menu(prompt, Menu.yes_no(), skip=True, default_option=Menu.yes()).run()
 		compression = choice.value == Menu.yes()
 
 	device_modification = disk.DeviceModification(device, wipe=True)
@@ -259,7 +259,9 @@ def suggest_single_disk_layout(
 				using_home_partition = False
 
 	# root partition
-	start = disk.Size(513, disk.Unit.MiB) if SysInfo.has_uefi() else disk.Size(206, disk.Unit.MiB)
+	start_mib = boot_partition.start.value+boot_partition.length.value
+	start_unit = boot_partition.start.unit
+	start = disk.Size(start_mib, start_unit) if SysInfo.has_uefi() else disk.Size(start_mib, start_unit)
 
 	# Set a size for / (/root)
 	if using_subvolumes or device_size_gib < min_size_to_allow_home_part or not using_home_partition:
