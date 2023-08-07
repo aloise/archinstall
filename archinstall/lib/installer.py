@@ -79,15 +79,16 @@ class Installer:
 		storage['session'] = self
 		storage['installation_session'] = self
 
-		self.modules: List[str] = []
+		self.modules: List[str] = ["nvme", "uas", "usb_storage"]
 		self._binaries: List[str] = []
 		self._files: List[str] = []
+		self._compression: str = 'LZ4'
 
 		# systemd, sd-vconsole and sd-encrypt will be replaced by udev, keymap and encrypt
 		# if HSM is not used to encrypt the root volume. Check mkinitcpio() function for that override.
 		self._hooks: List[str] = [
 			"base", "systemd", "autodetect", "keyboard",
-			"sd-vconsole", "modconf", "block", "filesystems", "fsck"
+			"sd-vconsole", "modconf", "block", "lvm2", "filesystems", "fsck"
 		]
 		self._kernel_params: List[str] = []
 		self._fstab_entries: List[str] = []
@@ -567,6 +568,7 @@ class Installer:
 				self._hooks = [hook.replace('systemd', 'udev').replace('sd-vconsole', 'keymap') for hook in self._hooks]
 
 			mkinit.write(f"HOOKS=({' '.join(self._hooks)})\n")
+			mkinit.write(f"COMPRESSION={self._compression}\n")
 
 		try:
 			SysCommand(f'/usr/bin/arch-chroot {self.target} mkinitcpio {" ".join(flags)}', peek_output=True)
